@@ -1,0 +1,8 @@
+services:
+  printer-tracker:
+    build: .
+    container_name: printer-tracker
+    restart: unless-stopped
+    ports:
+      - "8095:8080"   # 80/8080/8081/8090 are taken on the Pi
+    env_file: .env    # copy .env.example to .env and fill it in (kept out of git)
