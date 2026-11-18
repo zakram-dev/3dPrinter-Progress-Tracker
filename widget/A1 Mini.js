@@ -53,22 +53,6 @@ function bar(w, h, frac, fill, track) {
   return c.getImage()
 }
 
-function glowDot(hex) {
-  const c = new DrawContext()
-  c.size = new Size(16, 16)
-  c.opaque = false
-  c.respectScreenScale = true
-  // Soft halo: stacked translucent circles, largest and faintest first.
-  for (let i = 0; i < 6; i++) {
-    const r = 8 - i * 0.7
-    c.setFillColor(new Color(hex, 0.06 + i * 0.03))
-    c.fillEllipse(new Rect(8 - r, 8 - r, 2 * r, 2 * r))
-  }
-  c.setFillColor(new Color(hex))
-  c.fillEllipse(new Rect(4.5, 4.5, 7, 7))
-  return c.getImage()
-}
-
 function ring(size, frac, label) {
   const c = new DrawContext()
   c.size = new Size(size, size)
@@ -179,9 +163,10 @@ if (fam === "accessoryInline") {
 
   const top = w.addStack()
   top.centerAlignContent()
-  const dot = top.addImage(glowDot(hex))
-  dot.imageSize = new Size(16, 16)
-  top.addSpacer(4)
+  const dot = top.addText("●")
+  dot.font = Font.systemFont(8)
+  dot.textColor = accent
+  top.addSpacer(6)
   const st = top.addText(label.toUpperCase())
   st.font = Font.semiboldRoundedSystemFont(11)
   st.textColor = new Color("#FFFFFF", 0.55)
