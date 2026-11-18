@@ -10,7 +10,14 @@ ACCESS_CODE = os.environ.get("ACCESS_CODE", "")
 NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "")
 PORT = int(os.environ.get("PORT", "8080"))
 
-status = {"state": "UNKNOWN", "progress": -1, "remaining": -1}
+status = {"state": "UNKNOWN", "progress": -1, "remaining": -1, "name": "", "layer": 0, "layers": 0,
+          "nozzle": 0, "nozzle_target": 0, "bed": 0, "bed_target": 0, "speed": 0}
+
+# printer report key -> our status key
+FIELDS = {"mc_percent": "progress", "mc_remaining_time": "remaining", "subtask_name": "name",
+          "layer_num": "layer", "total_layer_num": "layers", "nozzle_temper": "nozzle",
+          "nozzle_target_temper": "nozzle_target", "bed_temper": "bed",
+          "bed_target_temper": "bed_target", "spd_lvl": "speed"}
 
 
 def notify(msg):
@@ -27,10 +34,9 @@ def handle(report, notify=notify):
     if not isinstance(p, dict):
         return
     # The printer sends partial updates, so only overwrite fields that are present.
-    if "mc_percent" in p:
-        status["progress"] = p["mc_percent"]
-    if "mc_remaining_time" in p:
-        status["remaining"] = p["mc_remaining_time"]
+    for key, name in FIELDS.items():
+        if key in p:
+            status[name] = p[key]
     s = p.get("gcode_state")
     if s:
         if status["state"] == "RUNNING" and s == "FINISH":
@@ -55,16 +61,8 @@ def on_message(client, userdata, msg):
         pass
 
 
-PAGE = b"""<!doctype html><meta name=viewport content="width=device-width">
-<title>A1 mini</title><body style="font-family:sans-serif;max-width:640px;margin:auto;padding:16px">
-<h2>A1 mini</h2><p id=st>loading...</p>
-<div style="background:#ddd;border-radius:6px"><div id=bar style="height:24px;width:0;background:#2a2;border-radius:6px"></div></div>
-<script>
-async function tick(){try{const s=await(await fetch('status')).json();
-bar.style.width=Math.max(0,s.progress)+'%';
-st.textContent=s.state+' - '+s.progress+'% - '+s.remaining+' min left';}catch(e){}}
-tick();setInterval(tick,3000);
-</script>"""
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html"), "rb") as f:
+    PAGE = f.read()
 
 
 class Web(BaseHTTPRequestHandler):

@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>A1 mini</title>
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --card: rgba(255, 255, 255, 0.045);
+    --line: rgba(255, 255, 255, 0.07);
+    --text: #f5f5f7;
+    --dim: rgba(245, 245, 247, 0.56);
+    --faint: rgba(245, 245, 247, 0.32);
+    --track: rgba(255, 255, 255, 0.08);
+    --accent: #8e8e93;
+    --heat: linear-gradient(90deg, #ffb340, #ff5e3a);
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f2f2f5;
+      --card: rgba(255, 255, 255, 0.75);
+      --line: rgba(0, 0, 0, 0.06);
+      --text: #1d1d1f;
+      --dim: rgba(29, 29, 31, 0.56);
+      --faint: rgba(29, 29, 31, 0.34);
+      --track: rgba(0, 0, 0, 0.07);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { background: var(--bg); }
+  body {
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: grid;
+    place-items: center;
+    padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  }
+  /* Soft glow behind the ring, tinted by the printer state. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(520px circle at 50% 32%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%);
+    transition: background 0.8s ease;
+  }
+  main { position: relative; width: 100%; max-width: 420px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+  h1 { font-size: 15px; font-weight: 600; color: var(--dim); letter-spacing: 0.01em; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px 6px 10px; border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--accent); font-size: 13px; font-weight: 650;
+    transition: color 0.6s, background 0.6s;
+  }
+  .chip i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .printing .chip i { animation: breathe 2.6s ease-in-out infinite; }
+  @keyframes breathe { 50% { opacity: 0.25; } }
+
+  .ring { position: relative; width: min(280px, 74vw); aspect-ratio: 1; margin: 0 auto; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+  .ring circle { fill: none; stroke-width: 7; }
+  .ring .track { stroke: var(--track); }
+  .ring .fill {
+    stroke: var(--accent);
+    stroke-linecap: round;
+    stroke-dasharray: 326.73;
+    stroke-dashoffset: 326.73;
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 55%, transparent));
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.2, 0.8, 0.2, 1), stroke 0.6s, opacity 0.4s;
+  }
+  .center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+  .pct { font-size: 68px; font-weight: 700; letter-spacing: -0.035em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .pct small { font-size: 26px; font-weight: 600; color: var(--dim); margin-left: 2px; letter-spacing: 0; }
+  .layer { margin-top: 10px; font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; min-height: 1em; }
+
+  .name {
+    margin: 26px auto 0; max-width: 100%; text-align: center;
+    font-size: 17px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-height: 1.3em;
+  }
+  .speed { display: block; margin-top: 4px; text-align: center; font-size: 13px; color: var(--faint); min-height: 1em; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 26px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 14px 16px 16px;
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+  .card span { display: block; font-size: 12px; font-weight: 500; color: var(--dim); margin-bottom: 6px; }
+  .card b { font-size: 24px; font-weight: 650; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .card b small { font-size: 14px; font-weight: 500; color: var(--faint); }
+  .mini { height: 4px; margin-top: 12px; border-radius: 4px; background: var(--track); overflow: hidden; }
+  .mini i { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--heat); transition: width 1s ease; }
+
+  footer { margin-top: 22px; text-align: center; font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>A1 mini</h1>
+    <div class="chip"><i></i><span id="state">Connecting</span></div>
+  </header>
+
+  <div class="ring" id="ring" role="progressbar" aria-label="Print progress" aria-valuemin="0" aria-valuemax="100">
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <circle class="track" cx="60" cy="60" r="52"/>
+      <circle class="fill" id="arc" cx="60" cy="60" r="52"/>
+    </svg>
+    <div class="center">
+      <div class="pct"><span id="pct">–</span><small>%</small></div>
+      <div class="layer" id="layer"></div>
+    </div>
+  </div>
+
+  <p class="name" id="name"></p>
+  <span class="speed" id="speed"></span>
+
+  <section class="grid">
+    <div class="card"><span>Time left</span><b id="left">–</b></div>
+    <div class="card"><span>Finishes</span><b id="eta">–</b></div>
+    <div class="card"><span>Nozzle</span><b id="noz">–</b><div class="mini"><i id="nozbar"></i></div></div>
+    <div class="card"><span>Bed</span><b id="bed">–</b><div class="mini"><i id="bedbar"></i></div></div>
+  </section>
+
+  <footer id="foot">Connecting…</footer>
+</main>
+
+<script>
+  const STATES = {
+    RUNNING: ["Printing", "#30d158"],
+    PREPARE: ["Preparing", "#64d2ff"],
+    PAUSE: ["Paused", "#ff9f0a"],
+    FINISH: ["Done", "#30d158"],
+    FAILED: ["Failed", "#ff453a"],
+    IDLE: ["Idle", "#8e8e93"],
+  };
+  const SPEEDS = { 1: "Silent", 2: "Standard", 3: "Sport", 4: "Ludicrous" };
+  const CIRC = 326.73; // 2πr for r=52
+  const $ = (id) => document.getElementById(id);
+  const pad = (n) => String(n).padStart(2, "0");
+
+  let endAt = null;     // when the print should finish (ms), only while printing
+  let pausedLeft = "";  // frozen "time left" text while paused
+  let lastOk = 0;
+
+  function fmtLeft(ms) {
+    const s = Math.max(0, Math.round(ms / 1000));
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+    return h ? `${h}:${pad(m)}:${pad(x)}` : `${m}:${pad(x)}`;
+  }
+  const clock = (d) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+  function temp(id, cur, target) {
+    cur = Math.round(cur || 0);
+    target = Math.round(target || 0);
+    $(id).innerHTML = target ? `${cur}°<small> / ${target}°</small>` : `${cur}°`;
+    $(id + "bar").style.width = target ? Math.min(100, (cur / target) * 100) + "%" : "0%";
+  }
+
+  function render(s) {
+    const [label, color] = s ? STATES[s.state] || [s.state, "#8e8e93"] : ["Offline", "#8e8e93"];
+    const running = s?.state === "RUNNING";
+    const active = s && ["RUNNING", "PAUSE", "PREPARE"].includes(s.state);
+    const done = s?.state === "FINISH";
+    const pct = done ? 100 : active ? Math.max(0, s.progress) : 0;
+
+    document.documentElement.style.setProperty("--accent", color);
+    document.body.classList.toggle("printing", running);
+    $("state").textContent = label;
+
+    $("pct").textContent = active || done ? pct : "–";
+    $("arc").style.strokeDashoffset = CIRC * (1 - pct / 100);
+    $("arc").style.opacity = pct > 0 ? 1 : 0;
+    $("ring").setAttribute("aria-valuenow", pct);
+    $("layer").textContent = s && (active || done) && s.layers ? `Layer ${s.layer} of ${s.layers}` : "";
+    $("name").textContent = s ? (s.name.replace(/_/g, " ") || "No print loaded") : "Can't reach the tracker";
+    $("speed").textContent = active && SPEEDS[s.speed] ? `${SPEEDS[s.speed]} speed` : "";
+
+    // The printer reports whole minutes; only re-sync the ticking countdown when it drifts > 1 min.
+    if (running && s.remaining > 0) {
+      const target = s.remaining * 60000;
+      if (!endAt || Math.abs(endAt - Date.now() - target) > 60000) endAt = Date.now() + target;
+    } else {
+      endAt = null;
+    }
+    pausedLeft = s?.state === "PAUSE" && s.remaining > 0 ? fmtLeft(s.remaining * 60000) : "";
+    $("eta").textContent = endAt ? clock(new Date(endAt)) : done ? "Finished" : s?.state === "PAUSE" ? "Paused" : "–";
+
+    temp("noz", s?.nozzle, s?.nozzle_target);
+    temp("bed", s?.bed, s?.bed_target);
+    if (!s) { $("noz").textContent = "–"; $("bed").textContent = "–"; }
+
+    document.title = active ? `${pct}% · A1 mini` : `A1 mini · ${label}`;
+  }
+
+  function tick() {
+    $("left").textContent = endAt ? fmtLeft(endAt - Date.now()) : pausedLeft || "–";
+    const ago = Math.round((Date.now() - lastOk) / 1000);
+    $("foot").textContent = !lastOk ? "Connecting…" : ago < 10 ? "Live" : `Updated ${ago}s ago`;
+  }
+
+  async function poll() {
+    try {
+      const r = await fetch("status", { cache: "no-store" });
+      render(await r.json());
+      lastOk = Date.now();
+    } catch {
+      render(null);
+    }
+    tick();
+  }
+
+  poll();
+  setInterval(poll, 3000);
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
