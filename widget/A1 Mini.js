@@ -102,7 +102,7 @@ const sub = active && s.remaining > 0 ? `${fmt(s.remaining)} left · ${eta(s.rem
 // (A timer's text always takes all free width, so anything placed right after it leaves a gap.)
 function addSub(parent, size, color, width) {
   const row = parent.addStack()
-  row.size = new Size(width, 0)
+  if (width) row.size = new Size(width, 0)
   row.centerAlignContent()
   const font = Font.mediumRoundedSystemFont(size)
   if (s?.state === "RUNNING" && s.remaining > 0) {
@@ -185,12 +185,11 @@ if (fam === "accessoryInline") {
   b.lineLimit = 1
 
   w.addSpacer(10)
-  const bw = small ? 122 : 290
-  const img = w.addImage(bar(bw, 8, frac, accent, new Color("#FFFFFF", 0.12)))
-  img.imageSize = new Size(bw, 8)
+  // No fixed size: the bar scales to the widget's full width on any iPhone (width:height ratio kept).
+  w.addImage(bar(small ? 130 : 350, 8, frac, accent, new Color("#FFFFFF", 0.12)))
 
   w.addSpacer(8)
-  addSub(w, small ? 11 : 12, new Color("#FFFFFF", 0.55), bw)
+  addSub(w, small ? 11 : 12, new Color("#FFFFFF", 0.55))
 }
 
 if (config.runsInWidget) Script.setWidget(w)
