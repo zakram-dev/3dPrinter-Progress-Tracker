@@ -98,26 +98,29 @@ const sub = active && s.remaining > 0 ? `${fmt(s.remaining)} left · ${eta(s.rem
 
 // Bottom line. While printing, iOS ticks the countdown every second on its own, between refreshes.
 // shortcut: printer reports whole minutes, so the countdown can be up to ~1 min off until the next refresh.
-function addSub(parent, size, color) {
+// Layout: countdown on the left edge, finish time on the right edge, same width as the bar.
+// (A timer's text always takes all free width, so anything placed right after it leaves a gap.)
+function addSub(parent, size, color, width) {
   const row = parent.addStack()
+  row.size = new Size(width, 0)
   row.centerAlignContent()
   const font = Font.mediumRoundedSystemFont(size)
   if (s?.state === "RUNNING" && s.remaining > 0) {
-    const box = row.addStack()
-    box.size = new Size(size * 4.6, 0) // timer text grabs all width unless boxed
-    const d = box.addDate(new Date(Date.now() + s.remaining * 60000))
+    const d = row.addDate(new Date(Date.now() + s.remaining * 60000))
     d.applyTimerStyle()
     d.leftAlignText()
     d.font = font
     d.textColor = color
     d.lineLimit = 1
-    const t = row.addText(size < 12 ? "left" : `left · ${eta(s.remaining)}`) // small widget has no room for ETA
+    if (size < 12) return // small widget: countdown only
+    const t = row.addText(`ends ${eta(s.remaining)}`)
     t.font = font
     t.textColor = color
     t.lineLimit = 1
     t.minimumScaleFactor = 0.8
   } else {
     const t = row.addText(sub)
+    row.addSpacer()
     t.font = font
     t.textColor = color
     t.lineLimit = 1
@@ -149,7 +152,7 @@ if (fam === "accessoryInline") {
   const img = w.addImage(bar(150, 6, frac, Color.white(), new Color("#FFFFFF", 0.25)))
   img.imageSize = new Size(150, 6)
   w.addSpacer(5)
-  addSub(w, 12, new Color("#FFFFFF", 0.75))
+  addSub(w, 12, new Color("#FFFFFF", 0.75), 150)
 } else {
   const small = fam === "small"
   const g = new LinearGradient()
@@ -187,7 +190,7 @@ if (fam === "accessoryInline") {
   img.imageSize = new Size(bw, 8)
 
   w.addSpacer(8)
-  addSub(w, small ? 11 : 12, new Color("#FFFFFF", 0.55))
+  addSub(w, small ? 11 : 12, new Color("#FFFFFF", 0.55), bw)
 }
 
 if (config.runsInWidget) Script.setWidget(w)
