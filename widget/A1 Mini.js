@@ -96,6 +96,35 @@ const sub = active && s.remaining > 0 ? `${fmt(s.remaining)} left · ${eta(s.rem
   : s ? "Printer is idle"
   : "Can't reach the Pi"
 
+// Bottom line. While printing, iOS ticks the countdown every second on its own, between refreshes.
+// shortcut: printer reports whole minutes, so the countdown can be up to ~1 min off until the next refresh.
+function addSub(parent, size, color) {
+  const row = parent.addStack()
+  row.centerAlignContent()
+  const font = Font.mediumRoundedSystemFont(size)
+  if (s?.state === "RUNNING" && s.remaining > 0) {
+    const box = row.addStack()
+    box.size = new Size(size * 4.6, 0) // timer text grabs all width unless boxed
+    const d = box.addDate(new Date(Date.now() + s.remaining * 60000))
+    d.applyTimerStyle()
+    d.leftAlignText()
+    d.font = font
+    d.textColor = color
+    d.lineLimit = 1
+    const t = row.addText(size < 12 ? "left" : `left · ${eta(s.remaining)}`) // small widget has no room for ETA
+    t.font = font
+    t.textColor = color
+    t.lineLimit = 1
+    t.minimumScaleFactor = 0.8
+  } else {
+    const t = row.addText(sub)
+    t.font = font
+    t.textColor = color
+    t.lineLimit = 1
+    t.minimumScaleFactor = 0.8
+  }
+}
+
 const w = new ListWidget()
 w.url = PAGE_URL
 // iOS throttles refreshes anyway; this just asks for "soon" while printing.
@@ -120,10 +149,7 @@ if (fam === "accessoryInline") {
   const img = w.addImage(bar(150, 6, frac, Color.white(), new Color("#FFFFFF", 0.25)))
   img.imageSize = new Size(150, 6)
   w.addSpacer(5)
-  const t = w.addText(sub)
-  t.font = Font.mediumRoundedSystemFont(12)
-  t.textOpacity = 0.75
-  t.lineLimit = 1
+  addSub(w, 12, new Color("#FFFFFF", 0.75))
 } else {
   const small = fam === "small"
   const g = new LinearGradient()
@@ -161,11 +187,7 @@ if (fam === "accessoryInline") {
   img.imageSize = new Size(bw, 8)
 
   w.addSpacer(8)
-  const t = w.addText(sub)
-  t.font = Font.mediumRoundedSystemFont(small ? 11 : 12)
-  t.textColor = new Color("#FFFFFF", 0.55)
-  t.lineLimit = 1
-  t.minimumScaleFactor = 0.8
+  addSub(w, small ? 11 : 12, new Color("#FFFFFF", 0.55))
 }
 
 if (config.runsInWidget) Script.setWidget(w)
